@@ -2,7 +2,6 @@
 local Players = game:GetService("Players")
 local Teams = game:GetService("Teams")
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -11,27 +10,27 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local STAFF_NAMES = {"Staff", "staff", "STAFF", "Mod", "Admin", "Moderador", "moderador"}
 local DEV_NAMES = {"Dev", "DEV", "Developer", "Desenvolvedor"}
 local DONO_NAMES = {"Dono", "Owner", "DONO", "OWNER"}
-local UPDATE_INTERVAL = 3 -- segundos entre atualizações
+local UPDATE_INTERVAL = 1 -- segundos entre cada atualização automática
 
--- // Funções utilitárias
+-- // FUNÇÃO PARA PEGAR LISTA DE CADA CARGO
 local function getPlayersByTeamNames(list)
 	local result = {}
 	for _, player in ipairs(Players:GetPlayers()) do
 		if player.Team and table.find(list, player.Team.Name) then
-			table.insert(result, player)
+			table.insert(result, player.DisplayName .. " (" .. player.Name .. ")")
 		end
 	end
 	return result
 end
 
--- // Criar GUI
+-- // CRIAR GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "PainelEquipes"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 300, 0, 340)
+Frame.Size = UDim2.new(0, 300, 0, 320)
 Frame.Position = UDim2.new(0.5, -150, 0.2, 0)
 Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Frame.BorderSizePixel = 0
@@ -39,6 +38,7 @@ Frame.Active = true
 Frame.Draggable = true
 Frame.Parent = ScreenGui
 
+-- Bordas arredondadas e contorno
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 10)
 UICorner.Parent = Frame
@@ -48,7 +48,7 @@ UIStroke.Thickness = 2
 UIStroke.Color = Color3.fromRGB(0, 110, 255)
 UIStroke.Parent = Frame
 
--- // Título
+-- // TÍTULO
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.Text = "👑 Painel de Equipes"
@@ -58,7 +58,7 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundTransparency = 1
 Title.Parent = Frame
 
--- // Botão recarregar
+-- // BOTÃO RECARREGAR
 local ReloadButton = Instance.new("TextButton")
 ReloadButton.Size = UDim2.new(0, 110, 0, 30)
 ReloadButton.Position = UDim2.new(0.5, -55, 0, 40)
@@ -81,9 +81,9 @@ ReloadButton.MouseLeave:Connect(function()
 	ReloadButton.BackgroundColor3 = Color3.fromRGB(45, 45, 80)
 end)
 
--- // Área de lista
+-- // SCROLL CONTAINER
 local ScrollingFrame = Instance.new("ScrollingFrame")
-ScrollingFrame.Size = UDim2.new(1, -20, 0, 240)
+ScrollingFrame.Size = UDim2.new(1, -20, 0, 230)
 ScrollingFrame.Position = UDim2.new(0, 10, 0, 75)
 ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 ScrollingFrame.ScrollBarThickness = 6
@@ -96,7 +96,7 @@ local ListLayout = Instance.new("UIListLayout")
 ListLayout.Padding = UDim.new(0, 5)
 ListLayout.Parent = ScrollingFrame
 
--- // Criar título de seção
+-- // CRIADOR DE SEÇÃO
 local function criarTituloSecao(texto, cor)
 	local title = Instance.new("TextLabel")
 	title.Size = UDim2.new(1, -10, 0, 25)
@@ -106,63 +106,10 @@ local function criarTituloSecao(texto, cor)
 	title.TextColor3 = cor
 	title.BackgroundTransparency = 1
 	title.Parent = ScrollingFrame
+	return title
 end
 
--- // ESP
-local espObjects = {}
-
-local function removerESP(player)
-	if espObjects[player] then
-		for _, obj in pairs(espObjects[player]) do
-			if obj and obj.Destroy then obj:Destroy() end
-		end
-		espObjects[player] = nil
-	end
-end
-
-local function criarESP(player, cor)
-	removerESP(player)
-
-	local char = player.Character or player.CharacterAdded:Wait()
-	local highlight = Instance.new("Highlight")
-	highlight.FillTransparency = 1
-	highlight.OutlineColor = cor
-	highlight.OutlineTransparency = 0
-	highlight.Parent = char
-
-	espObjects[player] = {highlight}
-end
-
-local function atualizarESP()
-	for player, _ in pairs(espObjects) do
-		if not player or not player.Character or not player.Parent then
-			removerESP(player)
-		end
-	end
-
-	for _, p in ipairs(Players:GetPlayers()) do
-		if p ~= LocalPlayer and p.Character and p.Parent then
-			local cor = nil
-			if p.Team and table.find(STAFF_NAMES, p.Team.Name) then
-				cor = Color3.fromRGB(120, 120, 255)
-			elseif p.Team and table.find(DEV_NAMES, p.Team.Name) then
-				cor = Color3.fromRGB(100, 255, 100)
-			elseif p.Team and table.find(DONO_NAMES, p.Team.Name) then
-				cor = Color3.fromRGB(255, 230, 100)
-			end
-
-			if cor then
-				if not espObjects[p] then
-					criarESP(p, cor)
-				end
-			else
-				removerESP(p)
-			end
-		end
-	end
-end
-
--- // Atualizar lista GUI
+-- // ATUALIZAR LISTA
 local function atualizarLista()
 	for _, child in ipairs(ScrollingFrame:GetChildren()) do
 		if child:IsA("TextLabel") and child ~= ListLayout then
@@ -175,10 +122,10 @@ local function atualizarLista()
 	local donos = getPlayersByTeamNames(DONO_NAMES)
 
 	criarTituloSecao("🛡️ STAFFS (" .. #staffs .. ")", Color3.fromRGB(200, 200, 255))
-	for _, player in ipairs(staffs) do
+	for _, nome in ipairs(staffs) do
 		local lbl = Instance.new("TextLabel")
 		lbl.Size = UDim2.new(1, -10, 0, 25)
-		lbl.Text = "⭐ " .. player.DisplayName
+		lbl.Text = "⭐ " .. nome
 		lbl.Font = Enum.Font.Gotham
 		lbl.TextSize = 14
 		lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -192,10 +139,10 @@ local function atualizarLista()
 	end
 
 	criarTituloSecao("💻 DEVS (" .. #devs .. ")", Color3.fromRGB(200, 255, 200))
-	for _, player in ipairs(devs) do
+	for _, nome in ipairs(devs) do
 		local lbl = Instance.new("TextLabel")
 		lbl.Size = UDim2.new(1, -10, 0, 25)
-		lbl.Text = "💻 " .. player.DisplayName
+		lbl.Text = "💻 " .. nome
 		lbl.Font = Enum.Font.Gotham
 		lbl.TextSize = 14
 		lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -209,10 +156,10 @@ local function atualizarLista()
 	end
 
 	criarTituloSecao("👑 DONOS (" .. #donos .. ")", Color3.fromRGB(255, 230, 150))
-	for _, player in ipairs(donos) do
+	for _, nome in ipairs(donos) do
 		local lbl = Instance.new("TextLabel")
 		lbl.Size = UDim2.new(1, -10, 0, 25)
-		lbl.Text = "👑 " .. player.DisplayName
+		lbl.Text = "👑 " .. nome
 		lbl.Font = Enum.Font.Gotham
 		lbl.TextSize = 14
 		lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -225,31 +172,19 @@ local function atualizarLista()
 		corner.Parent = lbl
 	end
 
-	ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, (#staffs + #devs + #donos) * 30 + 90)
+	ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, ( #staffs + #devs + #donos ) * 30 + 90)
 end
 
--- // Botão manual
-ReloadButton.MouseButton1Click:Connect(function()
-	atualizarLista()
-	atualizarESP()
-end)
+-- // BOTÃO MANUAL
+ReloadButton.MouseButton1Click:Connect(atualizarLista)
 
--- // Atualização automática
+-- // AUTO UPDATE
 task.spawn(function()
 	while true do
 		atualizarLista()
-		atualizarESP()
 		task.wait(UPDATE_INTERVAL)
 	end
 end)
 
-Players.PlayerAdded:Connect(function()
-	task.wait(1)
-	atualizarLista()
-	atualizarESP()
-end)
-
-Players.PlayerRemoving:Connect(function()
-	atualizarLista()
-	atualizarESP()
-end)
+Players.PlayerAdded:Connect(atualizarLista)
+Players.PlayerRemoving:Connect(atualizarLista)
