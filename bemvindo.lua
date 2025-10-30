@@ -6,7 +6,7 @@ local urls = {
     "https://raw.githubusercontent.com/lobinho147/painelstaffsintonia/refs/heads/main/painel.lua"
 }
 
-local msg = "Key do painel tags : permkey789 letra pequena(n vai copia) : modificado por kx4_dev e sua equipa tiki menu"
+local msg = "Key do painel tags : permkey789
 
 local function try_notify(title, text)
     -- tenta SendNotification via StarterGui se disponível (roblox)
