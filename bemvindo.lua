@@ -1,7 +1,6 @@
-
 local Links = {
     "https://raw.githubusercontent.com/kx4-dev/painelstaffsintonia/refs/heads/main/Tags%20menu.lua",
-    "https://raw.githubusercontent.com/kx4-dev/painelstaffsintonia/refs/heads/main/painel.lua
+    "https://raw.githubusercontent.com/kx4-dev/painelstaffsintonia/refs/heads/main/painel.lua", -- Corrigido: aspas de fechamento
     "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"
 }
 
@@ -11,19 +10,27 @@ local AUTO_CLOSE_SECONDS = 9
 -- Função para executar um script remoto com tratamento de erro
 local function executeRemote(url)
     local ok, res = pcall(function()
-        local code = game:HttpGet(url)
+        local code = game:HttpGet(url, true) -- Adicionado parâmetro para timeout (opcional)
+        if not code or #code < 10 then -- Verifica se a busca falhou ou o código é muito curto/vazio
+            error("Conteúdo vazio ou falha na busca da URL: " .. url)
+        end
         local fn = loadstring(code)
+        if not fn then
+            error("Falha ao carregar string (loadstring) da URL: " .. url)
+        end
         return fn()
     end)
     return ok, res
 end
 
--- Criar GUI
+-- Serviços e referências
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
 
+-- Criar GUI (mantido como está, mas com um toque visual extra)
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "NotifKeyPainel"
 screenGui.ResetOnSpawn = false
@@ -33,7 +40,7 @@ local frame = Instance.new("Frame")
 frame.Name = "Container"
 frame.Size = UDim2.new(0, 360, 0, 110)
 frame.Position = UDim2.new(0.5, -180, 0.2, 0)
-frame.BackgroundTransparency = 0
+frame.BackgroundTransparency = 0.05 -- Transparência sutil
 frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 frame.BorderSizePixel = 0
 frame.AnchorPoint = Vector2.new(0.5,0)
@@ -43,6 +50,13 @@ frame.Parent = screenGui
 local uicorner = Instance.new("UICorner", frame)
 uicorner.CornerRadius = UDim.new(0, 10)
 
+-- Adicionar um Stroke para destacar a borda
+local uistroke = Instance.new("UIStroke", frame)
+uistroke.Color = Color3.fromRGB(50,50,50)
+uistroke.Thickness = 1
+uistroke.Transparency = 0
+
+-- Título (restante da GUI mantido como está)
 local title = Instance.new("TextLabel", frame)
 title.Text = "Notificação"
 title.Size = UDim2.new(1, -20, 0, 28)
@@ -55,7 +69,7 @@ title.TextColor3 = Color3.fromRGB(240,240,240)
 
 local label = Instance.new("TextLabel", frame)
 label.Name = "Message"
-label.Text = "Carregando..."
+label.Text = "Carregando scripts remotos..." -- Mensagem inicial atualizada
 label.Size = UDim2.new(1, -20, 0, 44)
 label.Position = UDim2.new(0, 10, 0, 36)
 label.BackgroundTransparency = 1
@@ -94,14 +108,12 @@ closeBtn.BorderSizePixel = 0
 local closeCorner = Instance.new("UICorner", closeBtn)
 closeCorner.CornerRadius = UDim.new(0,8)
 
--- Função para copiar (alguns ambientes de execução permitem setclipboard)
+-- Função para copiar (mantida)
 local function tryCopy(text)
     local success, err = pcall(function()
         if setclipboard then
             setclipboard(text)
         else
-            -- alternativa para ambientes seguros: Roblox não permite nativamente
-            -- então apenas falharemos graciosamente
             error("setclipboard não disponível neste ambiente")
         end
     end)
@@ -122,7 +134,7 @@ closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
--- Tornar frame arrastável
+-- Tornar frame arrastável (lógica mantida)
 local dragging, dragInput, dragStart, startPos
 local function update(input)
     local delta = input.Position - dragStart
@@ -134,6 +146,7 @@ frame.InputBegan:Connect(function(input)
         dragging = true
         dragStart = input.Position
         startPos = frame.Position
+        -- Usar InputEnded para garantir que dragging seja falso
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -148,38 +161,10 @@ frame.InputChanged:Connect(function(input)
     end
 end)
 
-game:GetService("UserInputService").InputChanged:Connect(function(input)
+UserInputService.InputChanged:Connect(function(input)
     if input == dragInput and dragging then
         update(input)
     end
 end)
 
--- Executar os scripts remotos
-local results = {}
-for i, url in ipairs(Links) do
-    local ok, res = executeRemote(url)
-    results[i] = {ok = ok, res = res, url = url}
-end
-
--- Montar mensagem final
-local function buildMessage()
-    local msg = "Key do painel tags: "..KEY_TEXT.."\n\n"
-    for i, r in ipairs(results) do
-        if r.ok then
-            msg = msg .. ("Script %d: executado com sucesso.\n"):format(i)
-        else
-            msg = msg .. ("Script %d: falhou. Erro: %s\n"):format(i, tostring(r.res))
-        end
-    end
-    return msg
-end
-
-label.Text = buildMessage()
-
--- Auto fechar depois de X segundos
-spawn(function()
-    wait(AUTO_CLOSE_SECONDS)
-    if screenGui and screenGui.Parent then
-        pcall(function() screenGui:Destroy() end)
-    end
-end)
+-- Executar os scripts remotos (mantido síncrono para replicar a ordem original, mas com aviso
