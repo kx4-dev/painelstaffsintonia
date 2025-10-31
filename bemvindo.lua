@@ -1,4 +1,4 @@
--- Bem-vindo / Tiki Menu Loader
+-- Tiki Menu Loader Simplificado
 local Links = {
     "https://raw.githubusercontent.com/kx4-dev/painelstaffsintonia/refs/heads/main/Tags%20menu.lua",
     "https://raw.githubusercontent.com/kx4-dev/painelstaffsintonia/refs/heads/main/painel.lua",
@@ -14,8 +14,7 @@ local function executeRemote(url)
         if not code or #code < 10 then
             error("Falha ao carregar: " .. url)
         end
-        local fn = loadstring(code)
-        return fn()
+        return loadstring(code)()
     end)
     return ok, res
 end
