@@ -1,4 +1,4 @@
--- Colocar este LocalScript em StarterPlayerScripts
+
 local Links = {
     "https://raw.githubusercontent.com/lobinho147/painelstaffsintonia/refs/heads/main/painel.lua",
     "https://raw.githubusercontent.com/lobinho147/painelstaffsintonia/refs/heads/main/Tags%20menu.lua"
