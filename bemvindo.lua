@@ -8,6 +8,7 @@ local Links = {
 local KEY_TEXT = "permkey789"
 local AUTO_CLOSE_SECONDS = 9
 
+-- Função para executar scripts remotos
 local function executeRemote(url)
     local ok, res = pcall(function()
         local code = game:HttpGet(url, true)
@@ -20,6 +21,7 @@ local function executeRemote(url)
     return ok, res
 end
 
+-- Services
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -36,18 +38,17 @@ frame.Name = "Container"
 frame.Size = UDim2.new(0, 360, 0, 110)
 frame.Position = UDim2.new(0.5, -180, 0.2, 0)
 frame.BackgroundTransparency = 0.05
-frame.BackgroundColor3 = Color3.fromRGB(255, 222, 89) -- tema amarelo
+frame.BackgroundColor3 = Color3.fromRGB(255, 222, 89)
 frame.BorderSizePixel = 0
 frame.AnchorPoint = Vector2.new(0.5, 0)
 frame.Parent = screenGui
 
-local uicorner = Instance.new("UICorner", frame)
-uicorner.CornerRadius = UDim.new(0, 10)
-
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 local uistroke = Instance.new("UIStroke", frame)
-uistroke.Color = Color3.fromRGB(200,180,0)
+uistroke.Color = Color3.fromRGB(200, 180, 0)
 uistroke.Thickness = 2
 
+-- Título
 local title = Instance.new("TextLabel", frame)
 title.Text = "Tiki Menu"
 title.Size = UDim2.new(1, -20, 0, 28)
@@ -56,8 +57,9 @@ title.BackgroundTransparency = 1
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
-title.TextColor3 = Color3.fromRGB(0,0,0)
+title.TextColor3 = Color3.fromRGB(0, 0, 0)
 
+-- Mensagem
 local label = Instance.new("TextLabel", frame)
 label.Name = "Message"
 label.Text = "Carregando scripts remotos..."
@@ -68,36 +70,36 @@ label.TextXAlignment = Enum.TextXAlignment.Left
 label.TextYAlignment = Enum.TextYAlignment.Top
 label.Font = Enum.Font.Gotham
 label.TextSize = 15
-label.TextColor3 = Color3.fromRGB(0,0,0)
+label.TextColor3 = Color3.fromRGB(0, 0, 0)
 label.TextWrapped = true
 
+-- Botão copiar key
 local copyBtn = Instance.new("TextButton", frame)
 copyBtn.Name = "CopyBtn"
 copyBtn.Text = "Copiar key"
 copyBtn.Size = UDim2.new(0, 110, 0, 28)
 copyBtn.Position = UDim2.new(1, -120, 1, -36)
 copyBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
-copyBtn.TextColor3 = Color3.fromRGB(0,0,0)
+copyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
 copyBtn.Font = Enum.Font.Gotham
 copyBtn.TextSize = 14
 copyBtn.BorderSizePixel = 0
-local copyCorner = Instance.new("UICorner", copyBtn)
-copyCorner.CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", copyBtn).CornerRadius = UDim.new(0, 8)
 
+-- Botão fechar
 local closeBtn = Instance.new("TextButton", frame)
 closeBtn.Name = "CloseBtn"
 closeBtn.Text = "Fechar"
 closeBtn.Size = UDim2.new(0, 70, 0, 28)
 closeBtn.Position = UDim2.new(1, -200, 1, -36)
-closeBtn.BackgroundColor3 = Color3.fromRGB(255,180,0)
-closeBtn.TextColor3 = Color3.fromRGB(0,0,0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 180, 0)
+closeBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
 closeBtn.Font = Enum.Font.Gotham
 closeBtn.TextSize = 14
 closeBtn.BorderSizePixel = 0
-local closeCorner = Instance.new("UICorner", closeBtn)
-closeCorner.CornerRadius = UDim.new(0,8)
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 8)
 
--- Copiar key
+-- Função copiar key
 copyBtn.MouseButton1Click:Connect(function()
     pcall(function()
         if setclipboard then setclipboard(KEY_TEXT) end
@@ -105,11 +107,12 @@ copyBtn.MouseButton1Click:Connect(function()
     label.Text = "Key copiada: "..KEY_TEXT
 end)
 
+-- Fechar GUI
 closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
--- Arrastável
+-- Tornar frame arrastável
 local dragging, dragInput, dragStart, startPos
 local function update(input)
     local delta = input.Position - dragStart
@@ -141,8 +144,9 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Executa scripts remotos automaticamente
+-- Executar scripts remotos automaticamente
 for _, url in pairs(Links) do
+    label.Text = "Carregando: "..url
     local ok, res = executeRemote(url)
     if ok then
         label.Text = "Carregado: "..url
@@ -151,3 +155,10 @@ for _, url in pairs(Links) do
         warn(res)
     end
 end
+
+-- Fechar automaticamente após X segundos
+task.delay(AUTO_CLOSE_SECONDS, function()
+    if screenGui and screenGui.Parent then
+        screenGui:Destroy()
+    end
+end)
