@@ -2,6 +2,7 @@
 local Links = {
     "https://raw.githubusercontent.com/lobinho147/painelstaffsintonia/refs/heads/main/painel.lua",
     "https://raw.githubusercontent.com/lobinho147/painelstaffsintonia/refs/heads/main/Tags%20menu.lua"
+    "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"
 }
 
 local KEY_TEXT = "permkey789"
