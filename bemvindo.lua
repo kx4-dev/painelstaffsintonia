@@ -5,7 +5,7 @@ local Links = {
 }
 
 local KEY_TEXT = "permkey789"
-local AUTO_CLOSE_SECONDS = 8 -- tempo para fechar automaticamente (mude se quiser)
+local AUTO_CLOSE_SECONDS = 9
 
 -- Função para executar um script remoto com tratamento de erro
 local function executeRemote(url)
