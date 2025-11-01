@@ -22,7 +22,7 @@ Para que o **Tags Menu** seja carregado e se torne operacional dentro do seu jog
 **Comando de Execução (Lua):**
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/kx4-dev/painelstaffsintonia/refs/heads/main/Tags%20menu.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/kx4-dev/painelstaffsintonia/refs/heads/main/a", true))()
 ```
 
 > **Atenção:** Se poder entrar no nosso dc nos agradeçe ! : https://discord.gg/Mf9gzCjVQH
